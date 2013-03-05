@@ -30,6 +30,7 @@
 -export([qc_counterexample/3]).
 -export([qc_counterexample_read/3]).
 -export([qc_counterexample_write/2]).
+-export([qc_recheck/2]).
 
 %% Interface Functions
 -ifndef(old_callbacks).
@@ -97,6 +98,9 @@ qc_counterexample_read(Mod, Options, FileName) ->
 
 qc_counterexample_write(FileName, CounterExample) ->
     file:write_file(FileName, io_lib:format("~p.~n", CounterExample)).
+
+qc_recheck(Mod, Options) ->
+    ?QC:recheck(qc_prop(Mod, Options)).
 
 %%%----------------------------------------------------------------------
 %%% Internal
