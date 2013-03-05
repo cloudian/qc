@@ -31,6 +31,7 @@
 -export([qc_counterexample_read/3]).
 -export([qc_counterexample_write/2]).
 -export([qc_recheck/2]).
+-export([qc_pretty_print/0]).
 
 %% Interface Functions
 -ifndef(old_callbacks).
@@ -101,6 +102,15 @@ qc_counterexample_write(FileName, CounterExample) ->
 
 qc_recheck(Mod, Options) ->
     ?QC:recheck(qc_prop(Mod, Options)).
+
+qc_pretty_print() ->
+    case ?QC:counterexample() of
+        [_, Cmds]  ->
+            [io:format("~s.~n",[eqc_symbolic:pretty_print(C)]) ||
+                {set, _, C} <- Cmds];
+        _ ->
+            no_counterexample
+    end.
 
 %%%----------------------------------------------------------------------
 %%% Internal
