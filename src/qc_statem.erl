@@ -105,12 +105,20 @@ qc_recheck(Mod, Options) ->
 
 qc_pretty_print() ->
     case ?QC:counterexample() of
+        [_, {Cmds0, CmdsL}]  ->
+            pprint0("pre-cmds:", Cmds0),
+            [pprint0("parallel-cmds:", Cmds) || Cmds <- CmdsL];
         [_, Cmds]  ->
-            [io:format("~s.~n",[eqc_symbolic:pretty_print(C)]) ||
-                {set, _, C} <- Cmds];
+            pprint0("cmds:", Cmds);
         _ ->
             no_counterexample
     end.
+
+pprint0(Label, Cmds) ->
+    io:format("%% ~s~n", [Label]),
+    [io:format("~s.~n",[eqc_symbolic:pretty_print(C)]) ||
+        {set, _, C} <- Cmds].
+    
 
 %%%----------------------------------------------------------------------
 %%% Internal
