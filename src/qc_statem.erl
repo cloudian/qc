@@ -31,7 +31,7 @@
 -export([qc_counterexample_read/3]).
 -export([qc_counterexample_write/2]).
 -export([qc_recheck/2]).
--export([qc_pretty_print/0]).
+-export([qc_pretty_print/0, qc_pretty_print/1]).
 
 %% Interface Functions
 -ifndef(old_callbacks).
@@ -104,19 +104,21 @@ qc_recheck(Mod, Options) ->
     ?QC:recheck(qc_prop(Mod, Options)).
 
 qc_pretty_print() ->
+    qc_pretty_print([]).
+qc_pretty_print(Env) ->
     case ?QC:counterexample() of
         [_, {Cmds0, CmdsL}]  ->
-            pprint0("pre-cmds:", Cmds0),
-            [pprint0("parallel-cmds:", Cmds) || Cmds <- CmdsL];
+            pprint0( "pre-cmds:", Env, Cmds0),
+            [pprint0("parallel-cmds:", Env, Cmds) || Cmds <- CmdsL];
         [_, Cmds]  ->
-            pprint0("cmds:", Cmds);
+            pprint0("cmds:", Env, Cmds);
         _ ->
             no_counterexample
     end.
 
-pprint0(Label, Cmds) ->
+pprint0(Label, Env, Cmds) ->
     io:format("%% ~s~n", [Label]),
-    [io:format("~s.~n",[eqc_symbolic:pretty_print(C)]) ||
+    [io:format("~s.~n",[eqc_symbolic:pretty_print(Env, C)]) ||
         {set, _, C} <- Cmds].
     
 
