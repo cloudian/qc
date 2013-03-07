@@ -44,6 +44,7 @@
 qc_run(NumTests, Options) ->
     Name = proplists:get_value(name, Options, name()),
     Cover = proplists:get_value(cover, Options, false),
+    ResizeFun = proplists:get_value(resize_fun, Options, fun(X) -> X end),
     if is_list(Cover) ->
             cover_setup(Cover);
        Cover ->
@@ -56,10 +57,14 @@ qc_run(NumTests, Options) ->
         Options2 = proplists:delete(cover, Options1),
         case proplists:get_bool(noshrink, Options2) of
             false ->
-                ?QC:quickcheck(numtests(NumTests, qc_prop(Options2)));
+                ?QC:quickcheck(
+                   ?SIZED(Size,resize(ResizeFun(Size),
+                                      numtests(NumTests, qc_prop(Options2)))));
             true ->
                 Options3 = proplists:delete(noshrink, Options2),
-                ?QC:quickcheck(numtests(NumTests, noshrink(qc_prop(Options3))))
+                ?QC:quickcheck(
+                   ?SIZED(Size,resize(ResizeFun(Size),
+                                      numtests(NumTests, noshrink(qc_prop(Options3))))))
         end
     after
         if
