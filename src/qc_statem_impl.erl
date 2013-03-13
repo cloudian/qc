@@ -198,7 +198,7 @@ qc_prop1(true, Start, Options, Name, Sometimes, Timeout, Scenario, Params, S0) -
                                                     {H,HL,Res} = run_parallel_commands(THIS,Cmds,Params),
 
                                                     %% whenfail
-                                                    ?WHENFAIL(qc_prop_parallel_whenfail(Start, Options, Name, Scenario, Cmds, H, HL, Res),
+                                                    ?WHENFAIL(qc_prop_parallel_whenfail(Start, Options, Name, Scenario, Attempts, Cmds, H, HL, Res),
                                                               aggregate(command_names(Cmds),
                                                                         (ok =:= Res
                                                                          %% teardown
@@ -248,7 +248,7 @@ qc_prop_sequential_whenfail(Start, Options, Name, Scenario, Cmds, CmdsH, S, Res,
         counterexample_close(FileIoDev)
     end.
 
-qc_prop_parallel_whenfail(Start, Options, Name, Scenario, Cmds, H, HL, Res) ->
+qc_prop_parallel_whenfail(Start, Options, Name, Scenario, Attempts, Cmds, H, HL, Res) ->
     Now = erlang:now(),
     FileName = counterexample_filename(Name),
     FileIoDev = counterexample_open(FileName),
@@ -273,7 +273,7 @@ qc_prop_parallel_whenfail(Start, Options, Name, Scenario, Cmds, H, HL, Res) ->
                   ),
         %% counterexample
         io:format(FileIoDev,"~n~n%% ~s~n~n",[string:join(re:split(Output, "\r?\n", [{return,list}]), "\n%% ")]),
-        io:format(FileIoDev,"~p.~n",[[Scenario,Cmds]]),
+        io:format(FileIoDev,"~p.~n",[[Scenario,Attempts,Cmds]]),
         %% stderr
         io:format("~nCOUNTEREXAMPLE: ~p~n",[FileName])
     after
