@@ -32,6 +32,9 @@
 -export([write_counterexample/3, write_counterexample/4]).
 -export([eunit_module/1, eunit_module/2, eunit_module/3, eunit_module/4]).
 
+%% escript
+-export([main/1]).
+
 -ifdef(PROPER).
 %% @doc PropER has a different API than EQC
 module(Options, Module) ->
@@ -131,5 +134,16 @@ eunit_run(Module, NumTests) ->
     erlang:group_leader(whereis(user), self()),
     module([{numtests,NumTests}, fun ?QC_GEN:noshrink/1, {on_output,silent_printer()}], Module).
 -endif. %% -ifdef(EQC).
+
+%% --- escript ---
+main(A) ->
+    %% io:format(":::~p:::~n",[A]),
+    case A of
+        [Mod0,FileName] ->
+            Mod = list_to_atom(Mod0),
+            qc_statem:qc_counterexample_read(Mod, [{timeout, 2345*1000}], FileName);
+        _E ->
+            io:format("usage: .qc <modname> <counterexample>~n")
+    end.
 
 -endif. %% -ifdef(QC).
