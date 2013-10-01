@@ -142,6 +142,10 @@ main(A) ->
         [Mod0,FileName] ->
             Mod = list_to_atom(Mod0),
             qc_statem:qc_counterexample_read(Mod, [{timeout, 2345*1000}], FileName);
+        [Mod0,FileName|Opts0] ->
+            Mod = list_to_atom(Mod0),
+            Opts = lists:map(fun(X) -> {list_to_atom(X),true} end, Opts0),
+            qc_statem:qc_counterexample_read(Mod, [{timeout, 2345*1000}|Opts], FileName);
         _E ->
             io:format("usage: .qc <modname> <counterexample>~n")
     end.
