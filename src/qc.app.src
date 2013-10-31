@@ -32,6 +32,7 @@
              , qc_slave
              , qc_statem
              , qc_statem_impl
+             , qc_testm
             ]},
   {env, []}
  ]}.
