@@ -2,7 +2,7 @@
 
 -ifdef(QC).
 
--export([t_test/1, t_not/1, t_and/2, t_andl/1, t_or/2, t_then/2, t_all/1, t_all/2]).
+-export([t_test/1, t_not/1, t_and/2, t_andl/1, t_or/2, t_then/2, t_all/1, t_all/2, t_run/1]).
 -export([test_all/1, fix_valid/1]).
 
 -ifdef(lazy).
