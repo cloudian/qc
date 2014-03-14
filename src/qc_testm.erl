@@ -71,8 +71,18 @@ t_and(M1, M2) ->
 t_andl(Ms) ->
     t_all(Ms).
 t_or(M1, M2) ->
-    t_not(t_then(t_not(M1), t_not(M2))).
-
+    case t_run(M1) of
+        {true, V1} ->
+            t_return({t_or1, V1});
+        {false,V1} ->
+            case t_run(M2) of
+                {true, V2} ->
+                    t_return({t_or2, V1, V2});
+                {false, V2} ->
+                    t_fail({t_or0, V1, V2})
+            end
+    end.
+    %% t_not(t_then(t_not(M1), t_not(M2))).
 
 %% -----
 -spec t_then(t_m(_), t_m(B)) -> t_m(B).
