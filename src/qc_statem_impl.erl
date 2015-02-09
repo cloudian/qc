@@ -17,19 +17,16 @@
 %%% Purpose : Wrapper Implementation for statem
 %%%-------------------------------------------------------------------
 
--module(qc_statem_impl, [MOD]).
+-module(qc_statem_impl).
 
 -ifdef(QC).
 
 -include("qc_impl.hrl").
 
 %% API
--export([qc_run/2]).
--export([qc_sample/1]).
--export([qc_prop/1]).
-
-%% eqc_statem Callbacks
--export([command/1, next_state/3, precondition/2, postcondition/3]).
+-export([qc_run/3]).
+-export([qc_sample/2]).
+-export([qc_prop/2]).
 
 %%%----------------------------------------------------------------------
 %%% types and records
@@ -40,15 +37,15 @@
 %%%----------------------------------------------------------------------
 %%% API
 %%%----------------------------------------------------------------------
--spec qc_run(non_neg_integer(), [{name,string()} | cover | {cover,[module()]} | parallel | noshrink | {sometimes,pos_integer()} | {timeout,timeout()} | any()]) -> boolean().
-qc_run(NumTests, Options) ->
-    Name = proplists:get_value(name, Options, name()),
+-spec qc_run(atom(), non_neg_integer(), [{name,string()} | cover | {cover,[module()]} | parallel | noshrink | {sometimes,pos_integer()} | {timeout,timeout()} | any()]) -> boolean().
+qc_run(Mod, NumTests, Options) ->
+    Name = proplists:get_value(name, Options, name(Mod)),
     Cover = proplists:get_value(cover, Options, false),
     ResizeFun = proplists:get_value(resize_fun, Options, fun(X) -> X end),
     if is_list(Cover) ->
             cover_setup(Cover);
        Cover ->
-            cover_setup([MOD]);
+            cover_setup([Mod]);
        true ->
             ok
     end,
@@ -59,110 +56,75 @@ qc_run(NumTests, Options) ->
             false ->
                 ?QC:quickcheck(
                    ?SIZED(Size,resize(ResizeFun(Size),
-                                      numtests(NumTests, qc_prop(Options2)))));
+                                      numtests(NumTests, qc_prop(Mod, Options2)))));
             true ->
                 Options3 = proplists:delete(noshrink, Options2),
                 ?QC:quickcheck(
                    ?SIZED(Size,resize(ResizeFun(Size),
-                                      numtests(NumTests, noshrink(qc_prop(Options3))))))
+                                      numtests(NumTests, noshrink(qc_prop(Mod, Options3))))))
         end
     after
         if
             is_list(Cover) ->
                 cover_teardown(Cover, Name);
             Cover ->
-                cover_teardown([MOD], Name);
+                cover_teardown([Mod], Name);
             true ->
                 ok
         end
     end.
 
--spec qc_sample(proplist()) -> any().
-qc_sample(Options) ->
+-spec qc_sample(atom(), proplist()) -> any().
+qc_sample(Mod, Options) ->
     %% sample
-    Params = [{mod,MOD},{options,Options}],
-    ?QC_GEN:sample(?FORALL(Scenario,with_parameters(Params,scenario()),
-                           ?LET(S0,initial_state(Scenario),
-                                command(S0)))).
+    Params = [{mod,Mod},{options,Options}],
+    ?QC_GEN:sample(?FORALL(Scenario,with_parameters(Params,scenario(Mod)),
+                           ?LET(S0,Mod:initial_state(Scenario),
+                                command(Mod,S0)))).
 
--spec qc_prop(proplist()) -> any().
-qc_prop(Options) ->
+-spec qc_prop(atom(), proplist()) -> any().
+qc_prop(Mod, Options) ->
     %% setup
     Start = erlang:now(),
-    ok = setup(),
+    ok = Mod:setup(),
 
     %% loop
-    Name = proplists:get_value(name, Options, MOD),
+    Name = proplists:get_value(name, Options, Mod),
     Parallel = proplists:get_bool(parallel, Options),
     Sometimes = proplists:get_value(sometimes, Options, 1),
     Timeout = proplists:get_value(timeout, Options, 10000),
     NewOptions = proplists:delete(timeout, proplists:delete(sometimes, proplists:delete(parallel, proplists:delete(name, Options)))),
-    Params = [{parallel,Parallel}, {mod,MOD}, {options,NewOptions}],
-    ?FORALL(Scenario,with_parameters(Params,scenario()),
-            ?LET(S0,with_parameters(Params,initial_state(Scenario)),
-                 qc_prop1(Parallel, Start, Options, Name, Sometimes, Timeout, Scenario, Params, S0))).
+    Params = [{parallel,Parallel}, {mod,Mod}, {options,NewOptions}],
+    ?FORALL(Scenario,with_parameters(Params,scenario(Mod)),
+            ?LET(S0,with_parameters(Params,Mod:initial_state(Scenario)),
+                 qc_prop1(Mod, Parallel, Start, Options, Name, Sometimes, Timeout, Scenario, Params, S0))).
 
 %%%----------------------------------------------------------------------
 %%% Callbacks - eqc_statem
 %%%----------------------------------------------------------------------
 
 %% scenario generator
-scenario() ->
-    MOD:scenario_gen().
+scenario(Mod) ->
+    Mod:scenario_gen().
 
 %% command generator
-command(S) ->
-    MOD:command_gen(S).
+command(Mod, S) ->
+    Mod:command_gen(S).
 
-%% initial state
-initial_state(Scenario) ->
-    MOD:initial_state(Scenario).
-
-%% state is sane
-state_is_sane(S) ->
-    MOD:state_is_sane(S).
-
-%% next state
-next_state(S,R,C) ->
-    MOD:next_state(S,R,C).
-
-%% precondition
-precondition(S,C) ->
-    MOD:precondition(S,C).
-
-%% postcondition
-postcondition(S,C,R) ->
-    MOD:postcondition(S,C,R).
-
-%% setup
-setup() ->
-    MOD:setup().
-
-%% setup
-setup(Scenario) ->
-    MOD:setup(Scenario).
-
-%% teardown
-teardown(Ref, State) ->
-    MOD:teardown(Ref, State).
-
-%% aggregate
-aggregate(L) ->
-    MOD:aggregate(L).
 
 %%%----------------------------------------------------------------------
 %%% Internal
 %%%----------------------------------------------------------------------
-qc_prop1(false, Start, Options, Name, Sometimes, Timeout, Scenario, Params, S0) ->
-    ?FORALL(Cmds, more_commands(3,commands(THIS,S0)),
+qc_prop1(Mod, false, Start, Options, Name, Sometimes, Timeout, Scenario, Params, S0) ->
+    ?FORALL(Cmds, more_commands(3,commands(Mod, S0)),
             ?SOMETIMES(Sometimes,
                        ?TIMEOUT(Timeout,
                                 begin
                                     %% setup
-                                    {ok,TestRef} = setup(Scenario),
+                                    {ok,TestRef} = Mod:setup(Scenario),
 
                                     %% run
-                                    {H,S,Res} = run_commands(THIS,Cmds,Params),
+                                    {H,S,Res} = run_commands(Mod,Cmds,Params),
 
                                     %% history
                                     Fun = fun({Cmd,{State,Reply}},{N,Acc}) -> {N+1,[{N,Cmd,Reply,State}|Acc]} end,
@@ -170,39 +132,39 @@ qc_prop1(false, Start, Options, Name, Sometimes, Timeout, Scenario, Params, S0) 
                                     CmdsH = lists:reverse(RevCmdsH),
 
                                     %% sane
-                                    Sane = state_is_sane(S),
+                                    Sane = Mod:state_is_sane(S),
 
                                     %% whenfail
                                     ?WHENFAIL(qc_prop_sequential_whenfail(Start, Options, Name, Scenario, Cmds, CmdsH, S, Res, Sane),
-                                              aggregate(aggregate(CmdsH),
+                                              aggregate(Mod:aggregate(CmdsH),
                                                         (ok =:= Res
                                                          andalso Sane
                                                          %% teardown
-                                                         andalso ok =:= teardown(TestRef,S))))
+                                                         andalso ok =:= Mod:teardown(TestRef,S))))
                                 end)));
-qc_prop1(true, Start, Options, Name, Sometimes, Timeout, Scenario, Params, S0) ->
+qc_prop1(Mod, true, Start, Options, Name, Sometimes, Timeout, Scenario, Params, S0) ->
     %% Number of attempts to make each test case fail. When searching
     %% for a failing example, we run each test once. When searching
     %% for a way to shrink a test case, we run each candidate
     %% shrinking 100 times.
     ?FORALL(Attempts,?SHRINK(1,[100]),
-            ?FORALL(Cmds, parallel_commands(THIS,S0),
+            ?FORALL(Cmds, parallel_commands(Mod,S0),
                     ?ALWAYS(Attempts,
                             ?SOMETIMES(Sometimes,
                                        ?TIMEOUT(Timeout,
                                                 begin
                                                     %% setup
-                                                    {ok,TestRef} = setup(Scenario),
+                                                    {ok,TestRef} = Mod:setup(Scenario),
 
                                                     %% run
-                                                    {H,HL,Res} = run_parallel_commands(THIS,Cmds,Params),
+                                                    {H,HL,Res} = run_parallel_commands(Mod,Cmds,Params),
 
                                                     %% whenfail
                                                     ?WHENFAIL(qc_prop_parallel_whenfail(Start, Options, Name, Scenario, Attempts, Cmds, H, HL, Res),
                                                               aggregate(command_names(Cmds),
                                                                         (ok =:= Res
                                                                          %% teardown
-                                                                         andalso ok =:= teardown(TestRef,undefined))))
+                                                                         andalso ok =:= Mod:teardown(TestRef,undefined))))
                                                 end))))).
 
 qc_prop_sequential_whenfail(Start, Options, Name, Scenario, Cmds, CmdsH, S, Res, Sane) ->
@@ -280,10 +242,10 @@ qc_prop_parallel_whenfail(Start, Options, Name, Scenario, Attempts, Cmds, H, HL,
         counterexample_close(FileIoDev)
     end.
 
-name() ->
+name(Mod) ->
     {{Year,Month,Day},{Hour,Minute,Second}} = calendar:local_time(),
     lists:flatten(io_lib:format("~w-~4..0B~2..0B~2..0B-~2..0B~2..0B~2..0B",
-                                [MOD,Year,Month,Day,Hour,Minute,Second])).
+                                [Mod,Year,Month,Day,Hour,Minute,Second])).
 
 cover_setup(Mods) when is_list(Mods) ->
     Fun = fun(Mod) ->
