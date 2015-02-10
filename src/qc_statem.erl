@@ -41,6 +41,8 @@
 
 -callback scenario_gen() -> Gen::term().
 -callback command_gen(SymState::term()) -> Gen::term().
+-callback scenario() -> Gen::term().
+-callback command(SymState::term()) -> Gen::term().
 -callback initial_state(Scenario::term()) -> SymState::term().
 -callback state_is_sane(DynState::term()) -> boolean().
 -callback next_state(SymState::term(), R::var(), C::call()) -> SymState::term().
@@ -59,6 +61,8 @@
 behaviour_info(callbacks) ->
     [{scenario_gen,0}
      , {command_gen,1}
+     , {scenario,0} %% Bug 36899
+     , {command,1}  %% Bug 36899
      , {initial_state,1}
      , {state_is_sane,1}
      , {next_state,3}
