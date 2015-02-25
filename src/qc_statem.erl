@@ -21,6 +21,8 @@
 
 -ifdef(QC).
 
+-eqc_group_commands(false).
+
 -include("qc_statem.hrl").
 
 %% API
@@ -126,6 +128,6 @@ pprint0(Label, Env, Cmds) ->
     io:format("%% ~s~n", [Label]),
     [io:format("~s.~n",[eqc_symbolic:pretty_print(Env, C)]) ||
         {set, _, C} <- Cmds].
-    
+
 
 -endif. %% -ifdef(QC).

@@ -21,6 +21,8 @@
 
 -ifdef(QC).
 
+-eqc_group_commands(false).
+
 -include("qc_impl.hrl").
 
 %% API
@@ -127,7 +129,16 @@ qc_prop1(Mod, false, Start, Options, Name, Sometimes, Timeout, Scenario, Params,
                                     {H,S,Res} = run_commands(Mod,Cmds,Params),
 
                                     %% history
-                                    Fun = fun({Cmd,{State,Reply}},{N,Acc}) -> {N+1,[{N,Cmd,Reply,State}|Acc]} end,
+                                    Fun = fun({Cmd,H1},{N,Acc}) ->
+                                                  case H1 of
+                                                      %% eqc 1.33
+                                                      {eqc_statem_history,State,_,_,{_, Reply}} ->
+                                                          ok;
+                                                      %% eqc 1.26
+                                                      {State,Reply} ->
+                                                          ok
+                                                  end,
+                                                  {N+1,[{N,Cmd,Reply,State}|Acc]} end,
                                     {_, RevCmdsH} = lists:foldl(Fun, {1,[]}, zip(tl(Cmds),H)),
                                     CmdsH = lists:reverse(RevCmdsH),
 
