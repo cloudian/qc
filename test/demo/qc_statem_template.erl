@@ -31,6 +31,7 @@
 
 %% qc_statem Callbacks
 -behaviour(qc_statem).
+-export([scenario/0, command/1]). %% But 36899
 -export([scenario_gen/0, command_gen/1]).
 -export([initial_state/1, state_is_sane/1, next_state/3, precondition/2, postcondition/3]).
 -export([setup/0, setup/1, teardown/1, teardown/2, aggregate/1]).
@@ -76,9 +77,13 @@ qc_counterexample_write(FileName, CounterExample) ->
 %%%----------------------------------------------------------------------
 %%% qc_statem Callbacks
 %%%----------------------------------------------------------------------
+scenario() -> %% Bug 36899
+    scenario_gen().
 scenario_gen() ->
     undefined.
 
+command(S) -> % Bug 36899
+    command_gen(S).
 command_gen(#state{parallel=false}=S) ->
     serial_command_gen(S);
 command_gen(#state{parallel=true}=S) ->

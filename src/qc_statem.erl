@@ -41,6 +41,8 @@
 
 -callback scenario_gen() -> Gen::term().
 -callback command_gen(SymState::term()) -> Gen::term().
+-callback scenario() -> Gen::term().
+-callback command(SymState::term()) -> Gen::term().
 -callback initial_state(Scenario::term()) -> SymState::term().
 -callback state_is_sane(DynState::term()) -> boolean().
 -callback next_state(SymState::term(), R::var(), C::call()) -> SymState::term().
@@ -59,6 +61,8 @@
 behaviour_info(callbacks) ->
     [{scenario_gen,0}
      , {command_gen,1}
+     , {scenario,0} %% Bug 36899
+     , {command,1}  %% Bug 36899
      , {initial_state,1}
      , {state_is_sane,1}
      , {next_state,3}
@@ -74,6 +78,8 @@ behaviour_info(_Other) ->
 
 -endif. % -ifndef(old_callbacks).
 
+-define(IMPL, qc_statem_impl).
+
 %%%----------------------------------------------------------------------
 %%% types and records
 %%%----------------------------------------------------------------------
@@ -82,13 +88,13 @@ behaviour_info(_Other) ->
 %%% API
 %%%----------------------------------------------------------------------
 qc_run(Mod, NumTests, Options) ->
-    (impl(Mod)):qc_run(NumTests, Options).
+    ?IMPL:qc_run(Mod, NumTests, Options).
 
 qc_sample(Mod, Options) ->
-    (impl(Mod)):qc_sample(Options).
+    ?IMPL:qc_sample(Mod, Options).
 
 qc_prop(Mod, Options) ->
-    (impl(Mod)):qc_prop(Options).
+    ?IMPL:qc_prop(Mod, Options).
 
 qc_counterexample(Mod, Options, CounterExample) ->
     ?QC:check(qc_prop(Mod, Options), CounterExample).
@@ -121,11 +127,5 @@ pprint0(Label, Env, Cmds) ->
     [io:format("~s.~n",[eqc_symbolic:pretty_print(Env, C)]) ||
         {set, _, C} <- Cmds].
     
-
-%%%----------------------------------------------------------------------
-%%% Internal
-%%%----------------------------------------------------------------------
-impl(Mod) ->
-    qc_statem_impl:new(Mod).
 
 -endif. %% -ifdef(QC).
