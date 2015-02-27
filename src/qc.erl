@@ -21,6 +21,8 @@
 
 -ifdef(QC).
 
+-eqc_group_commands(false).
+
 -include("qc_impl.hrl").
 
 -include_lib("eunit/include/eunit.hrl").

@@ -23,6 +23,8 @@
 
 -compile(export_all).
 
+-eqc_group_commands(false).
+
 -include("qc_impl.hrl").
 
 %% helper for sizing down recursive generators
