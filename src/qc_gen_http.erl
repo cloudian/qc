@@ -27,6 +27,8 @@
 
 -compile(export_all).
 
+-eqc_group_commands(false).
+
 -include("qc_impl.hrl").
 
 
