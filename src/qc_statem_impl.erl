@@ -189,6 +189,8 @@ qc_prop_sequential_whenfail(Start, Options, Name, Scenario, Cmds, CmdsH, S, Res,
         LenCmdsH = length(CmdsH),
         Output = lists:flatten(
                    [
+		    %% file encoding --- Bug 37822
+		    io_lib:format("~n%% -*- coding: latin-1 -*-~n", []),
                     %% commands start
                     io_lib:format("~nCOUNTEREXAMPLE START: ~p~n",[FileName]),
                     %% duration
