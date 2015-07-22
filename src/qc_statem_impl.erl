@@ -189,8 +189,6 @@ qc_prop_sequential_whenfail(Start, Options, Name, Scenario, Cmds, CmdsH, S, Res,
         LenCmdsH = length(CmdsH),
         Output = lists:flatten(
                    [
-		    %% file encoding --- Bug 37822
-		    io_lib:format("~n%% -*- coding: latin-1 -*-~n", []),
                     %% commands start
                     io_lib:format("~nCOUNTEREXAMPLE START: ~p~n",[FileName]),
                     %% duration
@@ -218,7 +216,9 @@ qc_prop_sequential_whenfail(Start, Options, Name, Scenario, Cmds, CmdsH, S, Res,
                    ]
                   ),
         %% counterexample
-        io:format(FileIoDev,"~n~n%% ~s~n~n",[string:join(re:split(Output, "\r?\n", [{return,list}]), "\n%% ")]),
+	%% file encoding --- Bug 37822
+	Encoding = "%% -*- coding: latin-1 -*-",
+        io:format(FileIoDev,"~s~n~n%% ~s~n~n",[Encoding,string:join(re:split(Output, "\r?\n", [{return,list}]), "\n%% ")]),
         io:format(FileIoDev,"~p.~n",[[Scenario,Cmds]]),
         %% stderr
         io:format("~nCOUNTEREXAMPLE: ~p~n",[FileName])
