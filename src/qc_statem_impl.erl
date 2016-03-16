@@ -89,7 +89,7 @@ qc_sample(Options) ->
 qc_prop(Options) ->
     %% setup
     Start = erlang:now(),
-    ok = setup(),
+    ok = setup(Options),
 
     %% loop
     Name = proplists:get_value(name, Options, MOD),
@@ -135,12 +135,12 @@ postcondition(S,C,R) ->
     MOD:postcondition(S,C,R).
 
 %% setup
-setup() ->
-    MOD:setup().
+setup(Options) ->
+    MOD:setup(Options).
 
 %% setup
-setup(Scenario) ->
-    MOD:setup(Scenario).
+setup(Scenario, Options) ->
+    MOD:setup(Scenario, Options).
 
 %% teardown
 teardown(Ref, State) ->
@@ -159,7 +159,7 @@ qc_prop1(false, Start, Options, Name, Sometimes, Timeout, Scenario, Params, S0) 
                        ?TIMEOUT(Timeout,
                                 begin
                                     %% setup
-                                    {ok,TestRef} = setup(Scenario),
+                                    {ok,TestRef} = setup(Scenario, Options),
 
                                     %% run
                                     {H,S,Res} = run_commands(THIS,Cmds,Params),

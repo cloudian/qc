@@ -46,8 +46,8 @@
 -callback next_state(SymState::term(), R::var(), C::call()) -> SymState::term().
 -callback precondition(SymState::term(), C::call()) -> boolean().
 -callback postcondition(DynState::term(), C::call(), R::term()) -> boolean().
--callback setup() -> ok.
--callback setup(Scenario::term()) -> {ok, Ref::term()}.
+-callback setup(Options::list()) -> ok.
+-callback setup(Scenario::term(), Options::list()) -> {ok, Ref::term()}.
 -callback teardown(Ref::term(), DynState::term() | undefined) -> ok.
 -callback aggregate([{N::integer(), Call::term(), R::term(), DynState::term()}]) -> [term()].
 
@@ -64,8 +64,8 @@ behaviour_info(callbacks) ->
      , {next_state,3}
      , {precondition,2}
      , {postcondition,3}
-     , {setup,0}
      , {setup,1}
+     , {setup,2}
      , {teardown,2}
      , {aggregate,1}
     ];
