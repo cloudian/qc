@@ -154,12 +154,16 @@ aggregate(L) ->
 %%% Internal
 %%%----------------------------------------------------------------------
 qc_prop1(false, Start, Options, Name, Sometimes, Timeout, Scenario, Params, S0) ->
+    Sleep0 = proplists:get_value(setup_sleep0, Options, 0),
+    Sleep1 = proplists:get_value(setup_sleep1, Options, 0),
     ?FORALL(Cmds, more_commands(3,commands(THIS,S0)),
             ?SOMETIMES(Sometimes,
                        ?TIMEOUT(Timeout,
                                 begin
                                     %% setup
+				    timer:sleep(Sleep0),
                                     {ok,TestRef} = setup(Scenario, Options),
+				    timer:sleep(Sleep1),
 
                                     %% run
                                     {H,S,Res} = run_commands(THIS,Cmds,Params),
