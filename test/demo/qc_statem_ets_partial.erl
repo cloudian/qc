@@ -33,7 +33,7 @@
 -behaviour(qc_statem).
 -export([scenario_gen/0, command_gen/1]).
 -export([initial_state/1, state_is_sane/1, next_state/3, precondition/2, postcondition/3]).
--export([setup/0, setup/1, teardown/1, teardown/2, aggregate/1]).
+-export([setup/1, setup/2, teardown/1, teardown/2, aggregate/1]).
 
 %% DEBUG -compile(export_all).
 -export([new/2,
@@ -160,12 +160,12 @@ postcondition(#state{objs=Objs}, {call,_,next,[_Tab,Key]}, Res) ->
 postcondition(_S, {call,_,_,_}, _Res) ->
     false.
 
--spec setup() -> ok.
-setup() ->
+-spec setup([term()]) -> ok.
+setup(_Options) ->
     ok.
 
--spec setup(term()) -> {ok, term()}.
-setup(_Scenario) ->
+-spec setup(term(), [term()]) -> {ok, term()}.
+setup(_Scenario, _Options) ->
     teardown_table(?TAB),
     {ok, unused}.
 
