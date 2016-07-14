@@ -34,6 +34,7 @@
 -export([qc_counterexample_write/2]).
 -export([qc_recheck/2]).
 -export([qc_pretty_print/0, qc_pretty_print/1]).
+-export([rfun/0]).
 
 %% Interface Functions
 -ifndef(old_callbacks).
@@ -128,6 +129,24 @@ pprint0(Label, Env, Cmds) ->
     io:format("%% ~s~n", [Label]),
     [io:format("~s.~n",[eqc_symbolic:pretty_print(Env, C)]) ||
         {set, _, C} <- Cmds].
+
+%%%----------------------------------------------------------------------
+%%% Utility
+%%%----------------------------------------------------------------------
+rfun() -> %% example resize_fun
+    fun(X) ->
+            N0 = get(numttt),
+            if N0==undefined ->
+                    N=0;
+               true ->
+                    N=N0
+            end,
+            put(numttt, N+1), 
+            if (N rem 100)=:=0 -> io:format("~p~n", [N]);
+               true -> pass
+            end,
+            X
+    end.
 
 
 -endif. %% -ifdef(QC).
