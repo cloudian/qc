@@ -32,7 +32,7 @@
 -export([qc_counterexample_write/2]).
 -export([qc_recheck/2]).
 -export([qc_pretty_print/0, qc_pretty_print/1]).
--export([rfun/0]).
+-export([rfun/1]).
 
 %% Interface Functions
 -ifndef(old_callbacks).
@@ -132,7 +132,7 @@ impl(Mod) ->
 %%%----------------------------------------------------------------------
 %%% Utility
 %%%----------------------------------------------------------------------
-rfun() -> %% example resize_fun
+rfun(Fac) -> %% example resize_fun
     fun(X) ->
             N0 = get(numttt),
             if N0==undefined ->
@@ -144,7 +144,7 @@ rfun() -> %% example resize_fun
             if (N rem 100)=:=0 -> io:format("~p~n", [N]);
                true -> pass
             end,
-            X
+            X*Fac
     end.
 
 -endif. %% -ifdef(QC).
