@@ -131,6 +131,12 @@ qc_prop1(Mod, false, Start, Options, Name, Sometimes, Timeout, Scenario, Params,
                                     %% history
                                     Fun = fun({Cmd,H1},{N,Acc}) ->
                                                   case H1 of
+                                                      %% eqc 1.38
+                                                      {eqc_statem_history,State,_,_,_,{_, Reply}} ->
+                                                          ok;
+                                                      {eqc_statem_history,State,_,_,_,Err} ->
+							  %% Bug 37481
+							  Reply = Err;
                                                       %% eqc 1.33
                                                       {eqc_statem_history,State,_,_,{_, Reply}} ->
                                                           ok;
