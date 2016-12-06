@@ -87,7 +87,7 @@ qc_sample(Mod, Options) ->
 -spec qc_prop(atom(), proplist()) -> any().
 qc_prop(Mod, Options) ->
     %% setup
-    Start = erlang:now(),
+    Start = erlang:timestamp(),
     ok = Mod:setup(),
 
     %% loop
@@ -182,7 +182,7 @@ qc_prop1(Mod, true, Start, Options, Name, Sometimes, Timeout, Scenario, Params, 
                                                 end))))).
 
 qc_prop_sequential_whenfail(Start, Options, Name, Scenario, Cmds, CmdsH, S, Res, Sane) ->
-    Now = erlang:now(),
+    Now = erlang:timestamp(),
     FileName = counterexample_filename(Name),
     FileIoDev = counterexample_open(FileName),
     try
@@ -227,7 +227,7 @@ qc_prop_sequential_whenfail(Start, Options, Name, Scenario, Cmds, CmdsH, S, Res,
     end.
 
 qc_prop_parallel_whenfail(Start, Options, Name, Scenario, Attempts, Cmds, H, HL, Res) ->
-    Now = erlang:now(),
+    Now = erlang:timestamp(),
     FileName = counterexample_filename(Name),
     FileIoDev = counterexample_open(FileName),
     try
@@ -283,7 +283,7 @@ cover_teardown(Mods, Name) when is_list(Mods) ->
 counterexample_filename(Name) when is_tuple(Name) ->
     counterexample_filename(io_lib:format("~w", [Name]));
 counterexample_filename(Name) ->
-    {Mega, Sec, Micro} = now(),
+    {Mega, Sec, Micro} = erlang:timestamp(),
     lists:flatten(io_lib:format("~s-counterexample-~B-~B-~B.erl", [Name, Mega, Sec, Micro])).
 
 counterexample_open(FileName) ->
