@@ -143,6 +143,12 @@ qc_prop1(Mod, false, Start, Options, Name, Sometimes, Timeout, Scenario, Params,
                                                       {eqc_statem_history,State,_,_,Err} ->
 							  %% Bug 37481
 							  Reply = Err;
+                                                      %% eqc 1.38
+                                                      {State,_,_,_,{_, Reply}} ->
+                                                          ok;
+                                                      {State,_,_,_,Err} ->
+							  %% Bug 37481
+							  Reply = Err;
                                                       %% eqc 1.26
                                                       {State,Reply} ->
                                                           ok
