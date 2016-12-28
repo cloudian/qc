@@ -125,7 +125,7 @@ qc_prop1(Mod, false, Start, Options, Name, Sometimes, Timeout, Scenario, Params,
                                 begin
                                     %% setup
 				    timer:sleep(Sleep0),
-                                    {ok,TestRef} = Mod:setup(Scenario),
+                                    {ok,TestRef} = Mod:setup(Scenario, Options),
 				    timer:sleep(Sleep1),
 
                                     %% run
@@ -183,7 +183,7 @@ qc_prop1(Mod, true, Start, Options, Name, Sometimes, Timeout, Scenario, Params, 
                                        ?TIMEOUT(Timeout,
                                                 begin
                                                     %% setup
-                                                    {ok,TestRef} = Mod:setup(Scenario),
+                                                    {ok,TestRef} = Mod:setup(Scenario, Options),
 
                                                     %% run
                                                     {H,HL,Res} = run_parallel_commands(Mod,Cmds,Params),
