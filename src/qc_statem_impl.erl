@@ -88,7 +88,7 @@ qc_sample(Mod, Options) ->
 qc_prop(Mod, Options) ->
     %% setup
     Start = erlang:timestamp(),
-    ok = Mod:setup(),
+    ok = setup(Options),
 
     %% loop
     Name = proplists:get_value(name, Options, Mod),
@@ -113,17 +113,52 @@ scenario(Mod) ->
 command(Mod, S) ->
     Mod:command_gen(S).
 
+<<<<<<< HEAD
+=======
+%% postcondition
+postcondition(S,C,R) ->
+    MOD:postcondition(S,C,R).
+
+%% setup
+setup(Options) ->
+    MOD:setup(Options).
+
+%% setup
+setup(Scenario, Options) ->
+    MOD:setup(Scenario, Options).
+
+%% teardown
+teardown(Ref, State) ->
+    MOD:teardown(Ref, State).
+
+%% aggregate
+aggregate(L) ->
+    MOD:aggregate(L).
+>>>>>>> origin/hcf
 
 %%%----------------------------------------------------------------------
 %%% Internal
 %%%----------------------------------------------------------------------
+<<<<<<< HEAD
 qc_prop1(Mod, false, Start, Options, Name, Sometimes, Timeout, Scenario, Params, S0) ->
     ?FORALL(Cmds, more_commands(3,commands(Mod, S0)),
+=======
+qc_prop1(false, Start, Options, Name, Sometimes, Timeout, Scenario, Params, S0) ->
+    Sleep0 = proplists:get_value(setup_sleep0, Options, 0),
+    Sleep1 = proplists:get_value(setup_sleep1, Options, 0),
+    ?FORALL(Cmds, more_commands(3,commands(THIS,S0)),
+>>>>>>> origin/hcf
             ?SOMETIMES(Sometimes,
                        ?TIMEOUT(Timeout,
                                 begin
                                     %% setup
+<<<<<<< HEAD
                                     {ok,TestRef} = Mod:setup(Scenario),
+=======
+				    timer:sleep(Sleep0),
+                                    {ok,TestRef} = setup(Scenario, Options),
+				    timer:sleep(Sleep1),
+>>>>>>> origin/hcf
 
                                     %% run
                                     {H,S,Res} = run_commands(Mod,Cmds,Params),
