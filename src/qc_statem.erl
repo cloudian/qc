@@ -148,23 +148,4 @@ rfun(Fac) -> %% example resize_fun
             X*Fac
     end.
 
-
-%%%----------------------------------------------------------------------
-%%% Utility
-%%%----------------------------------------------------------------------
-rfun(Fac) -> %% example resize_fun
-    fun(X) ->
-            N0 = get(numttt),
-            if N0==undefined ->
-                    N=0;
-               true ->
-                    N=N0
-            end,
-            put(numttt, N+1), 
-            if (N rem 100)=:=0 -> io:format("~p~n", [N]);
-               true -> pass
-            end,
-            X*Fac
-    end.
-
 -endif. %% -ifdef(QC).
