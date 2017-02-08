@@ -124,12 +124,28 @@ qc_prop1(Mod, false, Start, Options, Name, Sometimes, Timeout, Scenario, Params,
                        ?TIMEOUT(Timeout,
                                 begin
                                     %% setup
-				    timer:sleep(Sleep0),
+                                    timer:sleep(Sleep0),
                                     {ok,TestRef} = Mod:setup(Scenario, Options),
-				    timer:sleep(Sleep1),
+                                    timer:sleep(Sleep1),
+
+                                    %% before run
+                                    case erlang:function_exported(Mod, before_run_commands, 1) of
+                                        true ->
+                                            Payloads = Mod:before_run_commands(TestRef, Options);
+                                        false ->
+                                            Payloads = undefined
+                                    end,
 
                                     %% run
                                     {H,S,Res} = run_commands(Mod,Cmds,Params),
+
+                                    %% after run
+                                    case erlang:function_exported(Mod, after_run_commands, 1) of
+                                        true ->
+                                            ok = Mod:after_run_commands(TestRef, Options, Payloads);
+                                        false ->
+                                            ok
+                                    end,
 
                                     %% history
                                     Fun = fun({Cmd,H1},{N,Acc}) ->
@@ -138,20 +154,20 @@ qc_prop1(Mod, false, Start, Options, Name, Sometimes, Timeout, Scenario, Params,
                                                       {eqc_statem_history,State,_,_,_,{_, Reply}} ->
                                                           ok;
                                                       {eqc_statem_history,State,_,_,_,Err} ->
-							  %% Bug 37481
-							  Reply = Err;
+                                                          %% Bug 37481
+                                                          Reply = Err;
                                                       %% eqc 1.33
                                                       {eqc_statem_history,State,_,_,{_, Reply}} ->
                                                           ok;
                                                       {eqc_statem_history,State,_,_,Err} ->
-							  %% Bug 37481
-							  Reply = Err;
+                                                          %% Bug 37481
+                                                          Reply = Err;
                                                       %% eqc 1.38
                                                       {State,_,_,_,{_, Reply}} ->
                                                           ok;
                                                       {State,_,_,_,Err} ->
-							  %% Bug 37481
-							  Reply = Err;
+                                                          %% Bug 37481
+                                                          Reply = Err;
                                                       %% eqc 1.26
                                                       {State,Reply} ->
                                                           ok

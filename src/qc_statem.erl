@@ -56,6 +56,12 @@
 -callback teardown(Ref::term(), DynState::term() | undefined) -> ok.
 -callback aggregate([{N::integer(), Call::term(), R::term(), DynState::term()}]) -> [term()].
 
+%% Optional callback functions
+-callback before_run_commands(Ref::term(), Options::list(), Commands::list()) -> Payloads::term().
+-callback after_run_commands(Ref::term(), Options::list(), Commands::list(), Payloads::term() | undefined) -> ok.
+
+-optional_callbacks([before_run_commands/3, after_run_commands/4]).
+
 -else. % -ifndef(old_callbacks).
 
 -export([behaviour_info/1]).
@@ -141,7 +147,7 @@ rfun(Fac) -> %% example resize_fun
                true ->
                     N=N0
             end,
-            put(numttt, N+1), 
+            put(numttt, N+1),
             if (N rem 100)=:=0 -> io:format("~p~n", [N]);
                true -> pass
             end,
