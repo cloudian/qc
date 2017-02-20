@@ -115,7 +115,16 @@ command(Mod, S) ->
 
 %%%----------------------------------------------------------------------
 %%% Internal
-%%%----------------------------------------------------------------------
+%%%----------------------------------------------------------------------e
+
+%% --- skip {model,_} and {init,_} ---
+fix_cmds([{model,_}|T]) ->
+    fix_cmds(T);
+fix_cmds([{init,_}|T]) ->
+    fix_cmds(T);
+fix_cmds(Cmds) ->
+    Cmds.
+
 qc_prop1(Mod, false, Start, Options, Name, Sometimes, Timeout, Scenario, Params, S0) ->
     Sleep0 = proplists:get_value(setup_sleep0, Options, 0),
     Sleep1 = proplists:get_value(setup_sleep1, Options, 0),
@@ -157,7 +166,7 @@ qc_prop1(Mod, false, Start, Options, Name, Sometimes, Timeout, Scenario, Params,
                                                           ok
                                                   end,
                                                   {N+1,[{N,Cmd,Reply,State}|Acc]} end,
-                                    {_, RevCmdsH} = lists:foldl(Fun, {1,[]}, zip(tl(Cmds),H)),
+                                    {_, RevCmdsH} = lists:foldl(Fun, {1,[]}, zip(fix_cmds(Cmds),H)),
                                     CmdsH = lists:reverse(RevCmdsH),
 
                                     %% sane
